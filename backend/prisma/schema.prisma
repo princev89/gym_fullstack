@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql" // Replace with your database provider
+  url      = env("DATABASE_URL")
+}
+
+model Gym {
+  id          Int       @id @default(autoincrement())
+  name        String
+  address     String
+  users       User[]
+  membershipPlans MembershipPlan[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model User {
+  id                Int       @id @default(autoincrement())
+  name              String
+  email             String    @unique
+  password          String
+  role              Role
+  gymId             Int
+  gym               Gym       @relation(fields: [gymId], references: [id])
+  membershipPlanId  Int?
+  membershipPlan    MembershipPlan? @relation(fields: [membershipPlanId], references: [id])
+  profileDetails    Json?
+  payments          Payment[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model MembershipPlan {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String
+  price       Float
+  duration    Int // Duration in days
+  gymId       Int
+  gym         Gym       @relation(fields: [gymId], references: [id])
+  users       User[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Payment {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  amount      Float
+  paymentDate DateTime
+  status      PaymentStatus
+  user        User       @relation(fields: [userId], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+enum Role {
+  MEMBER
+  TRAINER
+  ADMIN
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
